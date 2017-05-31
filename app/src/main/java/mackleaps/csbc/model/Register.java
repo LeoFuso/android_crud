@@ -17,10 +17,11 @@ public class Register {
     private Boolean status;
 
 
-    public Registro() {
+    public Register() {
     }
 
     public Register(long id_registro, String nome, String telefone, String email, Boolean status) {
+
         this.id_registro = id_registro;
         this.nome = nome;
         this.telefone = telefone;

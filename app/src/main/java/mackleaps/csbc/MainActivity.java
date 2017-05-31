@@ -17,6 +17,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 
+import java.io.IOException;
+import java.util.List;
+
+import mackleaps.csbc.model.JSONReader;
+import mackleaps.csbc.model.Register;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -68,6 +74,33 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 alertDialog.show();
+
+
+                String data2 = "[{\"id_registro\":1,\"nome\":\"Leonardo Fuso\",\"telefone\":\"(11)95276-4008\",\"email\":\"leonardofusonuzzo@gmail.com\",\"status\":true}]";
+
+                List<Register> lista = null;
+                try {
+                    lista = (List)JSONReader.readJSON(Register[].class,data2);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String nome = null;
+                for (Register object : lista) {
+                    nome = object.getNome();
+                }
+
+                AlertDialog alertDialog2 = new AlertDialog.Builder(this).create();
+                alertDialog2.setTitle("Objeto");
+                alertDialog2.setMessage("ID: "+nome);
+                alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog2.show();
+
+
             }
         }
     }

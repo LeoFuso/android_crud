@@ -408,10 +408,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      */
     public class UserLoginTask extends AsyncTask<Void, Void, String> {
 
+        private final int id_registro = 0;
         private final String mName;
         private final String mPhone;
         private final String mEmail;
         private final String mPassword;
+        private final boolean status = false;
 
         UserLoginTask(String name, String phone, String email, String password) {
             mName = name;
