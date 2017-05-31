@@ -1,5 +1,8 @@
 package mackleaps.csbc.model;
 
+import android.support.annotation.NonNull;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -15,7 +18,8 @@ import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
 public class JSONReader {
 
 
-    public static <T> Object readJSON(Class<T[]> batata, String json) throws IOException {
+
+    public static <T> Object deserializeList(Class<T[]> batata, String json) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -24,9 +28,19 @@ public class JSONReader {
         return list;
     }
 
-    public static String get_method(String address) {
+    public static String serializeObject(Object batata) throws IOException {
 
-        return null;
+        ObjectMapper mapper = new ObjectMapper();
+
+        return mapper.writeValueAsString(batata);
     }
+
+    public static <T> Object deserializeObject(Class<T> batata, String json) throws IOException{
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, batata.getClass());
+    }
+
+
+
 }
 

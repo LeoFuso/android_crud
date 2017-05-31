@@ -35,9 +35,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import mackleaps.csbc.model.JSONReader;
 import mackleaps.csbc.model.NetworkListener;
 import mackleaps.csbc.model.NetworkManager;
 import mackleaps.csbc.model.Register;
@@ -74,7 +76,6 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private EditText mPhone;
     private View mProgressView;
     private View mLoginFormView;
-    private Context context = this.getApplicationContext();
 
 
     @Override
@@ -435,33 +436,42 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         protected String doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            Register registro = new Register(id_registro,mName,mPhone,mEmail,status);
-
-            String response = null;
 
             try {
-
-
-                NetworkManager.getInstance().somePostRequestReturningString(JSON, new NetworkListener<String>()
-                {
-                    @Override
-                    public void getResult(String result)
-                    {
-                        if (!result.isEmpty())
-                        {
-                            //do what you need with the result...
-                        }
-                    }
-                });
-
-
-
-                response = mName + ":" + mPhone;
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return null;
+                JSON = JSONReader.serializeObject(new Register(id_registro,mName,mPhone,mEmail,status));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
+           if(JSON != null){
+
+               try {
+
+
+                   NetworkManager.getInstance().somePostRequestReturningString(JSON, new NetworkListener<String>()
+                   {
+                       @Override
+                       public void getResult(String result)
+                       {
+                           if (!result.isEmpty())
+                           {
+                               //do what you need with the result...
+                           }
+                       }
+                   });
+
+
+
+
+                   // Simulate network access.
+                   Thread.sleep(2000);
+               } catch (InterruptedException e) {
+                   return null;
+               }
+
+           }
+
+
 
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
@@ -476,7 +486,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             }
 
             // TODO: register the new account here.
-            return response;
+            return JSON;
         }
 
         @Override

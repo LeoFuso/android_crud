@@ -32,8 +32,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
 
-
-
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -43,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
         NetworkManager.getInstance(this);
 
         Button register = (Button) findViewById(R.id.register);
-        register.setOnClickListener(new View.OnClickListener(){
+        register.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
                 intent.putExtra("context", MainActivity.class);
                 startActivityForResult(intent, 1);
@@ -65,16 +63,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
-            if(resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK) {
+
+                List<Register> lista = null;
+                String json = data.getStringExtra("JSON");
+                try {
+                    lista = (List) JSONReader.deserializeList(Register[].class, "[" + json + "]");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                String nome = null;
+                String email = null;
+                String telefone = null;
+                if (lista != null) {
+                    for (Register object : lista) {
+                        nome = object.getNome();
+                        email = object.getEmail();
+                        telefone = object.getTelefone();
+                    }
+                }
+
 
                 AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-                alertDialog.setTitle("Alert");
-                alertDialog.setMessage("ID: "+data.getStringExtra("JSON"));
+                alertDialog.setTitle("Objeto: ");
+                alertDialog.setMessage("Nome: " + nome + "\nTelefone: " + telefone+ "\nE-mail: " + email);
                 alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
@@ -83,32 +100,6 @@ public class MainActivity extends AppCompatActivity {
                         });
                 alertDialog.show();
 
-
-                String data2 = "[{\"id_registro\":1,\"nome\":\"Leonardo Fuso\",\"telefone\":\"(11)95276-4008\",\"email\":\"leonardofusonuzzo@gmail.com\",\"status\":true}]";
-
-                List<Register> lista = null;
-                try {
-                    lista = (List)JSONReader.readJSON(Register[].class,data2);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String nome = null;
-                for (Register object : lista) {
-                    nome = object.getNome();
-                }
-
-                AlertDialog alertDialog2 = new AlertDialog.Builder(this).create();
-                alertDialog2.setTitle("Objeto");
-                alertDialog2.setMessage("ID: "+nome);
-                alertDialog2.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
-                alertDialog2.show();
-
-
             }
         }
     }
@@ -116,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     public void ButtonOnClick(View v) {
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Alert");
-        alertDialog.setMessage("ID: "+v.getId());
+        alertDialog.setMessage("ID: " + v.getId());
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
