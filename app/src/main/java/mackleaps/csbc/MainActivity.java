@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view){
                 Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 1);
+
+
             }
         });
 
@@ -48,6 +50,26 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK) {
+
+                AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                alertDialog.setTitle("Alert");
+                alertDialog.setMessage("ID: "+data.getStringExtra("JSON"));
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+            }
+        }
     }
 
     public void ButtonOnClick(View v) {
