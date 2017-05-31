@@ -3,9 +3,11 @@ package mackleaps.csbc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -18,6 +20,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.telephony.PhoneNumberFormattingTextWatcher;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -59,6 +63,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
+    private EditText mName;
+    private EditText mPhone;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -67,6 +73,88 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         setupActionBar();
+
+        mName = (EditText) findViewById(R.id.name);
+
+        mPhone = (EditText) findViewById(R.id.phone);
+        mPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher() {
+
+            //we need to know if the user is erasing or inputing some new character
+            private boolean backspacingFlag = false;
+            //we need to block the :afterTextChanges method to be called again after we just replaced the EditText text
+            private boolean editedFlag = false;
+            //we need to mark the cursor position and restore it after the edition
+            private int cursorComplement;
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //we store the cursor local relative to the end of the string in the EditText before the edition
+                cursorComplement = s.length()-mPhone.getSelectionStart();
+                //we check if the user ir inputing or erasing a character
+                if (count > after) {
+                    backspacingFlag = true;
+                } else {
+                    backspacingFlag = false;
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // nothing to do here =D
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String string = s.toString();
+                //what matters are the phone digits beneath the mask, so we always work with a raw string with only digits
+                String phone = string.replaceAll("[^\\d]", "");
+
+                //if the text was just edited, :afterTextChanged is called another time... so we need to verify the flag of edition
+                //if the flag is false, this is a original user-typed entry. so we go on and do some magic
+                if (!editedFlag) {
+
+                    if (phone.length() >= 8 && !backspacingFlag) {
+
+                        if(phone.length() > 10 && !backspacingFlag){
+
+                            //we will edit. next call on this textWatcher will be ignored
+                            editedFlag = true;
+                            //here is the core. we substring the raw digits and add the mask as convenient
+                            String ans = "(" + phone.substring(0, 2) + ") " + phone.substring(2,3) + " " + phone.substring(3,7) + "-" + phone.substring(7);
+                            mPhone.setText(ans);
+                            //we deliver the cursor to its original position relative to the end of the string
+                            mPhone.setSelection(mPhone.getText().length()-cursorComplement);
+
+                        }else{
+
+                            //we will edit. next call on this textWatcher will be ignored
+                            editedFlag = true;
+                            //here is the core. we substring the raw digits and add the mask as convenient
+                            String ans = "(" + phone.substring(0, 2) + ") " + phone.substring(2,6) + "-" + phone.substring(6);
+                            mPhone.setText(ans);
+                            //we deliver the cursor to its original position relative to the end of the string
+                            mPhone.setSelection(mPhone.getText().length()-cursorComplement);
+
+                        }
+
+                        //we end at the most simple case, when just one character mask is needed
+                        //example: 99999 <- 3+ digits already typed
+                        // masked: (999) 99
+                    } else if (phone.length() >= 2 && !backspacingFlag) {
+                        editedFlag = true;
+                        String ans = "(" +phone.substring(0, 2) + ") " + phone.substring(2);
+                        mPhone.setText(ans);
+                        mPhone.setSelection(mPhone.getText().length()-cursorComplement);
+                    }
+                    // We just edited the field, ignoring this cicle of the watcher and getting ready for the next
+                } else {
+                    editedFlag = false;
+                }
+            }
+        });
+
+
+
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -84,6 +172,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         });
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,7 +234,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private void setupActionBar() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             // Show the Up button in the action bar.
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            //TODO: Descobrir porque isso causa um NullPointer.
+            //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -164,6 +254,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
+        String phone = mPhone.getText().toString();
+        String name = mName.getText().toString();
+
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
 
@@ -196,7 +289,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask = new UserLoginTask(name, phone, email, password);
             mAuthTask.execute((Void) null);
         }
     }
@@ -301,49 +394,73 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         int IS_PRIMARY = 1;
     }
 
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    public class UserLoginTask extends AsyncTask<Void, Void, String> {
 
+        private final String mName;
+        private final String mPhone;
         private final String mEmail;
         private final String mPassword;
 
-        UserLoginTask(String email, String password) {
+        UserLoginTask(String name, String phone, String email, String password) {
+            mName = name;
+            mPhone = phone;
             mEmail = email;
             mPassword = password;
         }
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected String doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
+            String JSON = null;
+
             try {
+                JSON = mName + ":" + mPhone;
                 // Simulate network access.
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
-                return false;
+                return null;
             }
 
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
                 if (pieces[0].equals(mEmail)) {
                     // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                    if(pieces[1].equals(mPassword)){
+                        return "true";
+                    }else{
+                        return null;
+                    }
                 }
             }
 
             // TODO: register the new account here.
-            return true;
+            return JSON;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(final String success) {
             mAuthTask = null;
             showProgress(false);
 
-            if (success) {
+            AlertDialog alertDialog = new AlertDialog.Builder(RegisterActivity.this).create();
+            alertDialog.setTitle("Alert");
+            alertDialog.setMessage("ID: "+success);
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
+
+
+            if (success != null) {
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));

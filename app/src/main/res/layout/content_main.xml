@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:elevation="0dp"
         android:text="@string/button_register"
-        android:onClick="ButtonOnClick"
+
         app:layout_constraintBottom_toTopOf="@+id/view"
         app:layout_constraintDimensionRatio="w,1:1"
         app:layout_constraintLeft_toLeftOf="parent"
