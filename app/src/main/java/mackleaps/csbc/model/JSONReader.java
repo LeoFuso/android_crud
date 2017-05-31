@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.provider.ContactsContract.CommonDataKinds.Website.URL;
+
 /**
  * Created by Leonardo Fuso on 31/05/17.
  */
@@ -21,4 +23,10 @@ public class JSONReader {
 
         return list;
     }
+
+    public static String get_method(String address) {
+
+        return null;
+    }
 }
+

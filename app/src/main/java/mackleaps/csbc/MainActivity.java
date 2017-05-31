@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import mackleaps.csbc.model.JSONReader;
+import mackleaps.csbc.model.NetworkManager;
 import mackleaps.csbc.model.Register;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,16 +33,21 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        NetworkManager.getInstance(this);
 
         Button register = (Button) findViewById(R.id.register);
         register.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
+                intent.putExtra("context", MainActivity.class);
                 startActivityForResult(intent, 1);
 
 
@@ -57,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

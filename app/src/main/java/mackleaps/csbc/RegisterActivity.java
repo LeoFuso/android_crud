@@ -3,6 +3,7 @@ package mackleaps.csbc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -37,13 +38,16 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import mackleaps.csbc.model.NetworkListener;
+import mackleaps.csbc.model.NetworkManager;
+import mackleaps.csbc.model.Register;
+
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
 public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
-
 
     private static String JSON = null;
     /**
@@ -70,6 +74,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private EditText mPhone;
     private View mProgressView;
     private View mLoginFormView;
+    private Context context = this.getApplicationContext();
 
 
     @Override
@@ -79,6 +84,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         setupActionBar();
+
+
 
         mName = (EditText) findViewById(R.id.name);
 
@@ -428,9 +435,26 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         protected String doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
+            Register registro = new Register(id_registro,mName,mPhone,mEmail,status);
+
             String response = null;
 
             try {
+
+
+                NetworkManager.getInstance().somePostRequestReturningString(JSON, new NetworkListener<String>()
+                {
+                    @Override
+                    public void getResult(String result)
+                    {
+                        if (!result.isEmpty())
+                        {
+                            //do what you need with the result...
+                        }
+                    }
+                });
+
+
 
                 response = mName + ":" + mPhone;
                 // Simulate network access.
@@ -464,7 +488,6 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
 
 
-
             if (success != null) {
 
                 Intent intent = new Intent();
@@ -480,6 +503,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
 
         }
+
 
         @Override
         protected void onCancelled() {
