@@ -3,6 +3,7 @@ package mackleaps.csbc.model;
 import android.content.Context;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -14,6 +15,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -90,9 +92,15 @@ public class NetworkManager {
         requestQueue.add(request);
     }
 
-    public void genericPOST(final String json, final NetworkListener<String> listener) {
+    public void genericPOST(String json, final NetworkListener<String> listener) throws JSONException {
         String url = prefixURL + "create";
         Log.d(TAG, url);
+
+        JSONObject jsonBody = new JSONObject(json);
+
+        final String requestBody = jsonBody.toString();
+
+        Log.d(TAG, requestBody);
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
@@ -115,14 +123,52 @@ public class NetworkManager {
                     }
                 }
         ) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
             // this is the relevant method
             @Override
-            public byte[] getBody()  {
-
-                return json.getBytes();
+            public byte[] getBody()  throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    Log.d(TAG + ": ", "Unsupported Encoding while trying to get the bytes of %s using %s");
+                    return null;
+                }
             }
         };
         requestQueue.add(postRequest);
+    }
+
+    public void genericGET(String address, final NetworkListener<String> listener){
+        Log.d(TAG + ": ", address);
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, address, null,
+                        new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG + ": ", "somePostRequest Response : " + response.toString());
+                        if(null != response.toString())
+                            listener.getResult(response.toString());
+                    }
+
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error)
+                    {
+                        if (null != error.networkResponse)
+                        {
+                            listener.getResult("Error Response code: " + error.networkResponse.statusCode);
+                        }
+                    }
+                });
+
+        Log.d(TAG + ": ", jsObjRequest.toString());
+
+        requestQueue.add(jsObjRequest);
     }
 }
 

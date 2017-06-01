@@ -454,7 +454,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
                try {
 
 
-                   NetworkManager.getInstance().genericPOST(JSON, new NetworkListener<String>()
+                   //NetworkManager.getInstance().genericPOST(JSON, new NetworkListener<String>()
+                   NetworkManager.getInstance().genericGET("http://localhost:8080/Register/services/registro/list", new NetworkListener<String>()
                    {
                        @Override
                        public void getResult(String result)
