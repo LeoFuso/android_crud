@@ -8,8 +8,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -86,6 +88,41 @@ public class NetworkManager {
                 });
 
         requestQueue.add(request);
+    }
+
+    public void genericPOST(final String json, final NetworkListener<String> listener) {
+        String url = prefixURL + "create";
+        Log.d(TAG, url);
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG + ": ", "somePostRequest Response : " + response.toString());
+                        if(null != response.toString())
+                            listener.getResult(response.toString());
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        if (null != error.networkResponse)
+                        {
+                            listener.getResult("Error Response code: " + error.networkResponse.statusCode);
+                        }
+                    }
+                }
+        ) {
+            // this is the relevant method
+            @Override
+            public byte[] getBody()  {
+
+                return json.getBytes();
+            }
+        };
+        requestQueue.add(postRequest);
     }
 }
 

@@ -46,7 +46,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, RegisterActivity.class);
                 intent.putExtra("context", MainActivity.class);
-                startActivityForResult(intent, 1);
+                //startActivityForResult(intent, 1);
+                startActivityForResult(intent, 2);
 
 
             }
@@ -92,6 +93,27 @@ public class MainActivity extends AppCompatActivity {
                 AlertDialog alertDialog = new AlertDialog.Builder(this).create();
                 alertDialog.setTitle("Objeto: ");
                 alertDialog.setMessage("Nome: " + nome + "\nTelefone: " + telefone+ "\nE-mail: " + email);
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
+
+            }
+        }
+
+        if (requestCode == 2) {
+            if (resultCode == RESULT_OK) {
+
+
+                String json = data.getStringExtra("JSON");
+
+
+                AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+                alertDialog.setTitle("Objeto: ");
+                alertDialog.setMessage("Nome: "+json);
                 alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {

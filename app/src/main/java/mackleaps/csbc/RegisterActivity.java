@@ -35,6 +35,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +66,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "foo@example.com:hello", "bar@example.com:world"
     };
+
+    private static String response = null;
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -437,6 +442,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // TODO: attempt authentication against a network service.
 
 
+
             try {
                 JSON = JSONReader.serializeObject(new Register(id_registro,mName,mPhone,mEmail,status));
             } catch (IOException e) {
@@ -448,14 +454,14 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
                try {
 
 
-                   NetworkManager.getInstance().somePostRequestReturningString(JSON, new NetworkListener<String>()
+                   NetworkManager.getInstance().genericPOST(JSON, new NetworkListener<String>()
                    {
                        @Override
                        public void getResult(String result)
                        {
                            if (!result.isEmpty())
                            {
-                               //do what you need with the result...
+                               response = result;
                            }
                        }
                    });
@@ -501,9 +507,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             if (success != null) {
 
                 Intent intent = new Intent();
-                intent.putExtra("JSON",JSON);
+                //intent.putExtra("JSON",JSON);
+                intent.putExtra("JSON",response);
                 setResult(RESULT_OK, intent);
-
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
